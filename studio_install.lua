@@ -70,14 +70,17 @@ function MovementUtil.ApplyKnockback(targetCharacter, direction, force)
 	end
 end
 
--- SFX helper
+-- SFX helper (Safe)
 function MovementUtil.PlaySound(soundId, parent)
-	local sound = Instance.new("Sound")
-	sound.SoundId = "rbxassetid://" .. tostring(soundId)
-	sound.Parent = parent
-	sound:Play()
-	sound.Ended:Connect(function()
-		sound:Destroy()
+	if not soundId or soundId == 0 then return end
+	local success, err = pcall(function()
+		local sound = Instance.new("Sound")
+		sound.SoundId = "rbxassetid://" .. tostring(soundId)
+		sound.Parent = parent
+		sound:Play()
+		sound.Ended:Connect(function()
+			sound:Destroy()
+		end)
 	end)
 end
 
@@ -172,14 +175,22 @@ function MovementService.Init()
 end
 
 function MovementService.HandleSetClass(player, className)
-	-- Grab the class module from the Shared folder
+	print("🛠 [" .. player.Name .. "] attempting to set class: " .. tostring(className))
+	
+	-- Grab the class module script
 	local classModuleScript = Classes:FindFirstChild(className)
 	if not classModuleScript then 
-		warn("tried to set invalid class: " .. tostring(className))
+		warn("❌ [" .. player.Name .. "] Class module script NOT FOUND: " .. tostring(className))
 		return false 
 	end
 	
-	local classModule = require(classModuleScript)
+	-- Safely require the module
+	local success, classModule = pcall(require, classModuleScript)
+	if not success then
+		warn("❌ [" .. player.Name .. "] FAILED to require class " .. className .. ": " .. tostring(classModule))
+		return false
+	end
+
 	PlayerData[player].Class = classModule
 	
 	-- Update player stats (WalkSpeed, JumpPower, etc.)
@@ -194,28 +205,39 @@ function MovementService.HandleSetClass(player, className)
         humanoid.JumpPower = 50 * classModule.Passives.JumpPowerMult
     end
 	
-	print(player.Name .. " is now a " .. classModule.Name .. " [" .. classModule.Tier .. "]")
+	print("✨ [" .. player.Name .. "] is now: " .. classModule.Name .. " (" .. classModule.Tier .. ")")
 	return true
 end
 
 function MovementService.HandleAbility(player, abilityIdx) -- abilityIdx is "Active1" or "Active2"
 	local data = PlayerData[player]
-	if not data or not data.Class then return end
+	if not data or not data.Class then 
+		warn("⚠️ [" .. player.Name .. "] triggered ability without a class set!")
+		return 
+	end
 	
 	local class = data.Class
 	local abilityData = class.Abilities[abilityIdx]
 	
-	if not abilityData then return end
+	if not abilityData then 
+		warn("⚠️ [" .. player.Name .. "] triggered invalid ability index: " .. tostring(abilityIdx))
+		return 
+	end
 	
 	-- Basic CD check so people don't spam
 	local now = tick()
-	if data.Cooldowns[abilityIdx] and now - data.Cooldowns[abilityIdx] < abilityData.CD then
+	if data.Cooldowns[abilityIdx] and now - data.Cooldowns[abilityIdx] < (abilityData.CD or 0) then
 		return
 	end
 	
 	-- Fire off the server logic in the module
 	if abilityData.ExecuteServer then
-		abilityData.ExecuteServer(player, player.Character)
+		local success, err = pcall(abilityData.ExecuteServer, player, player.Character)
+		if not success then
+			warn("🔥 [" .. player.Name .. "] ERROR executing " .. (abilityData.Name or abilityIdx) .. ": " .. tostring(err))
+		else
+			print("⚡ [" .. player.Name .. "] used: " .. (abilityData.Name or abilityIdx))
+		end
 	end
 	
 	data.Cooldowns[abilityIdx] = now
@@ -285,10 +307,10 @@ local QuickStep = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Simple forward dash
+				-- Use the reliable ApplyVelocity helper instead of raw velocity
 				local dashDir = hrp.CFrame.LookVector
-				hrp.AssemblyLinearVelocity = dashDir * 75
-				MovementUtil.PlaySound(3413531338, hrp) 
+				MovementUtil.ApplyVelocity(hrp, dashDir * 80, 0.25)
+				-- Sound removed to fix 403 error
 			end
 		},
 		Active2 = {
@@ -298,13 +320,12 @@ local QuickStep = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Poke someone from a distance
+				-- Increased range and impact
 				local forward = hrp.CFrame.LookVector
-				local target = MovementUtil.GetNearestInRay(hrp.Position, forward, 12, {character})
+				local target = MovementUtil.GetNearestInRay(hrp.Position, forward, 20, {character})
 				
 				if target then
-					MovementUtil.ApplyKnockback(target, forward, 60)
-					MovementUtil.PlaySound(3413531338, target:FindFirstChild("HumanoidRootPart"))
+					MovementUtil.ApplyKnockback(target, forward, 75)
 				end
 			end
 		}
@@ -333,8 +354,7 @@ local Skywalker = {
 				if not hrp then return end
 				
 				-- Kick the air to go up
-				hrp.AssemblyLinearVelocity += Vector3.new(0, 60, 0)
-				MovementUtil.PlaySound(3413531338, hrp)
+				MovementUtil.ApplyVelocity(hrp, Vector3.new(0, 60, 0), 0.2)
 			end
 		},
 		Active2 = {
@@ -397,8 +417,8 @@ local Accelerator = {
 				-- Kick off a wall to go flying
 				local wall = MovementUtil.IsNearWall(hrp, 5)
 				if wall then
-					hrp.AssemblyLinearVelocity = wall.Normal * 55 + Vector3.new(0, 20, 0)
-					MovementUtil.PlaySound(3413531338, hrp)
+					local jumpDir = (wall.Normal * 1.5 + Vector3.new(0, 1.2, 0)).Unit
+					MovementUtil.ApplyVelocity(hrp, jumpDir * 65, 0.3)
 				end
 			end
 		}
@@ -525,8 +545,6 @@ local Illusionist = {
 						
 						hrp.CFrame = targetPos
 						targetHrp.CFrame = myPos
-						
-						MovementUtil.PlaySound(3413531338, hrp)
 					end
 				end
 			end
@@ -556,7 +574,6 @@ local Berserker = {
 				
 				-- Scream and push everyone away
 				MovementUtil.CreateExplosionPush(hrp.Position, 12, 500000)
-				MovementUtil.PlaySound(3413531338, hrp) 
 			end
 		},
 		Active2 = {
@@ -1106,8 +1123,11 @@ local InfinityGod = {
 			Name = "Lapse Pull",
 			CD = 7,
 			ExecuteServer = function(player, character)
+				local hrp = character:FindFirstChild("HumanoidRootPart")
+				if not hrp then return end
+				
 				-- Pull everything to a point in front of you
-				local targetPos = character.HumanoidRootPart.Position + character.HumanoidRootPart.CFrame.LookVector * 15
+				local targetPos = hrp.Position + hrp.CFrame.LookVector * 15
 				MovementUtil.CreateExplosionPush(targetPos, 8, -400000) 
 			end
 		},
@@ -1115,8 +1135,11 @@ local InfinityGod = {
 			Name = "Red Blast",
 			CD = 13,
 			ExecuteServer = function(player, character)
+				local hrp = character:FindFirstChild("HumanoidRootPart")
+				if not hrp then return end
+				
 				-- High-pressure blast at your cursor center 
-				local targetPos = character.HumanoidRootPart.Position + character.HumanoidRootPart.CFrame.LookVector * 8
+				local targetPos = hrp.Position + hrp.CFrame.LookVector * 8
 				MovementUtil.CreateExplosionPush(targetPos, 8, 700000)
 			end
 		}
