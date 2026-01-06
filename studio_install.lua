@@ -6,7 +6,21 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local StarterPlayerScripts = StarterPlayer:WaitForChild("StarterPlayerScripts")
 
--- 1. Create Structure
+-- 1. Utility: Cleanup existing folders to prevent dupes
+local function Cleanup(name, parent)
+	local existing = parent:FindFirstChild(name)
+	while existing do
+		existing:Destroy()
+		existing = parent:FindFirstChild(name)
+	end
+end
+
+Cleanup("MovementSystem", ReplicatedStorage)
+Cleanup("MovementSystem", ServerScriptService)
+Cleanup("MovementSystem", StarterPlayerScripts)
+Cleanup("MovementRemotes", ReplicatedStorage)
+
+-- 2. Create Structure
 local MovementSystem = Instance.new("Folder")
 MovementSystem.Name = "MovementSystem"
 MovementSystem.Parent = ReplicatedStorage
@@ -160,6 +174,21 @@ SetClassRemote.Parent = RemoteFolder
 -- Keep track of who's what and their CD status
 local PlayerData = {}
 
+function MovementService.ApplyClassStats(player, character, classModule)
+	if not character or not classModule then return end
+	local humanoid = character:WaitForChild("Humanoid", 5)
+	if not humanoid then return end
+	
+	humanoid.WalkSpeed = classModule.BaseWalkSpeed or 16
+	
+	if classModule.Passives and classModule.Passives.JumpPowerMult then
+		humanoid.UseJumpPower = true
+		humanoid.JumpPower = 50 * classModule.Passives.JumpPowerMult
+	end
+	
+	print("📊 Applied " .. classModule.Name .. " stats to " .. player.Name)
+end
+
 function MovementService.Init()
 	SetClassRemote.OnServerInvoke = MovementService.HandleSetClass
 	AbilityRemote.OnServerEvent:Connect(MovementService.HandleAbility)
@@ -171,6 +200,13 @@ function MovementService.Init()
 			Cooldowns = {},
 			Stamina = 100
 		}
+		
+		player.CharacterAdded:Connect(function(character)
+			local data = PlayerData[player]
+			if data and data.Class then
+				MovementService.ApplyClassStats(player, character, data.Class)
+			end
+		end)
 	end)
 end
 
@@ -193,17 +229,11 @@ function MovementService.HandleSetClass(player, className)
 
 	PlayerData[player].Class = classModule
 	
-	-- Update player stats (WalkSpeed, JumpPower, etc.)
-	local character = player.Character or player.CharacterAdded:Wait()
-	local humanoid = character:WaitForChild("Humanoid")
-	
-	-- Use class defaults or fall back to Roblox standard
-	humanoid.WalkSpeed = classModule.BaseWalkSpeed or 16
-    
-    if classModule.Passives and classModule.Passives.JumpPowerMult then
-        humanoid.UseJumpPower = true
-        humanoid.JumpPower = 50 * classModule.Passives.JumpPowerMult
-    end
+	-- Update player stats immediately
+	local character = player.Character
+	if character then
+		MovementService.ApplyClassStats(player, character, classModule)
+	end
 	
 	print("✨ [" .. player.Name .. "] is now: " .. classModule.Name .. " (" .. classModule.Tier .. ")")
 	return true

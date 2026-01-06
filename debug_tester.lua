@@ -6,6 +6,19 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local StarterPlayerScripts = StarterPlayer:WaitForChild("StarterPlayerScripts")
 
+-- 0. Cleanup to prevent dupes
+local function Cleanup(name, parent)
+	local existing = parent:FindFirstChild(name)
+	while existing do
+		existing:Destroy()
+		existing = parent:FindFirstChild(name)
+	end
+end
+
+Cleanup("MovementSystem_Init", ServerScriptService)
+Cleanup("MovementSystem_TestUI", StarterPlayerScripts)
+Cleanup("SpawnDummyRemote", ReplicatedStorage)
+
 -- 1. Create Server Init Script
 local serverInit = Instance.new("Script")
 serverInit.Name = "MovementSystem_Init"
