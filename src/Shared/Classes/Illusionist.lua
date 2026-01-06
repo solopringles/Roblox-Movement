@@ -1,10 +1,10 @@
--- Shared/Classes/Illusionist.lua
+-- [Common] Illusionist | Prank 'em. Use decoys and swap positions.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local Illusionist = {
 	Name = "Illusionist",
 	Tier = "Common",
-	BaseWalkSpeed = 16 * 1.08, -- +8% WalkSpeed
+	BaseWalkSpeed = 16 * 1.08, -- A bit ghosty
 	Abilities = {
 		Active1 = {
 			Name = "Decoy Dash",
@@ -14,7 +14,7 @@ local Illusionist = {
 				local humanoid = character:FindFirstChild("Humanoid")
 				if not hrp or not humanoid then return end
 				
-				-- Spawn dummy decoy
+				-- Send out a fake version of yourself
 				local decoy = Instance.new("Part")
 				decoy.Size = character:GetExtentsSize()
 				decoy.CFrame = hrp.CFrame
@@ -44,6 +44,7 @@ local Illusionist = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Swap spots with some poor guy
 				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 8, {character})
 				if target then
 					local targetHrp = target:FindFirstChild("HumanoidRootPart")

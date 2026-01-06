@@ -1,4 +1,4 @@
--- Shared/Classes/UltimateGates.lua
+-- [Mythic] Ultimate Gates | Might Guy's Limit. Walk on the sky and drop the Night Guy fist.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local UltimateGates = {
@@ -12,7 +12,7 @@ local UltimateGates = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Cycle platforms
+				-- Spawn temporary platforms under your feet
 				for i = 1, 10 do
 					local plat = Instance.new("Part")
 					plat.Size = Vector3.new(4, 0.5, 4)
@@ -32,6 +32,7 @@ local UltimateGates = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Mega fling your target, but you'll be tired after
 				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 20, {character})
 				if target then
 					local tHum = target:FindFirstChild("Humanoid")
@@ -42,7 +43,6 @@ local UltimateGates = {
 					end
 				end
 				
-				-- Self ragdoll
 				local hum = character:FindFirstChild("Humanoid")
 				if hum then
 					hum.PlatformStand = true

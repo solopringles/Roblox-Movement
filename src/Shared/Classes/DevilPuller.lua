@@ -1,4 +1,4 @@
--- Shared/Classes/DevilPuller.lua
+-- [Legendary] Devil Puller | Chainsaw Man vibes. Rip and tear? No, pull and pulse.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local DevilPuller = {
@@ -12,6 +12,7 @@ local DevilPuller = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Drag someone toward you from 15 studs away
 				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 15, {character})
 				if target then
 					local tHrp = target:FindFirstChild("HumanoidRootPart")
@@ -29,7 +30,7 @@ local DevilPuller = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Sequential pulses
+				-- Send out rhythmic pulses to keep 'em in check
 				for i = 1, 2 do
 					task.wait(0.6)
 					local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 10, {character})

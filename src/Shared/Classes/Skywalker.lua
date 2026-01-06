@@ -1,4 +1,4 @@
--- Shared/Classes/Skywalker.lua
+-- [Common] Skywalker | One Piece Geppo vibes. Don't touch the floor.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local Skywalker = {
@@ -6,8 +6,8 @@ local Skywalker = {
 	Tier = "Common",
 	BaseWalkSpeed = 16,
 	Passives = {
-		JumpPowerMult = 1.15,
-		FallSpeedMult = 0.85
+		JumpPowerMult = 1.15, -- Jump higher than the peasants
+		FallSpeedMult = 0.85 -- Float like a feather
 	},
 	Abilities = {
 		Active1 = {
@@ -17,6 +17,7 @@ local Skywalker = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Kick the air to go up
 				hrp.AssemblyLinearVelocity += Vector3.new(0, 60, 0)
 				MovementUtil.PlaySound(3413531338, hrp)
 			end
@@ -28,8 +29,9 @@ local Skywalker = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Hold your position mid-air
 				local vf = Instance.new("VectorForce")
-				vf.Force = Vector3.new(0, 4000, 0) -- Near neutral buoyancy for standard parts
+				vf.Force = Vector3.new(0, 4000, 0)
 				vf.Attachment0 = hrp:FindFirstChildOfClass("Attachment") or Instance.new("Attachment", hrp)
 				vf.RelativeTo = Enum.ActuatorRelativeTo.World
 				vf.Parent = hrp

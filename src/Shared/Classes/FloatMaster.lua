@@ -1,4 +1,4 @@
--- Shared/Classes/FloatMaster.lua
+-- [Rare] Float Master | Gojo/Ochaco vibes. Control the gravity in the room.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local FloatMaster = {
@@ -12,6 +12,7 @@ local FloatMaster = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Pop a bubble that pushes everyone away
 				MovementUtil.CreateExplosionPush(hrp.Position, 8, 400000)
 			end
 		},
@@ -22,7 +23,7 @@ local FloatMaster = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Logic to pull 2 nearest
+				-- Pull the 2 nearest people into your face
 				local found = 0
 				for _, p in pairs(game.Players:GetPlayers()) do
 					if p ~= player and p.Character and found < 2 then

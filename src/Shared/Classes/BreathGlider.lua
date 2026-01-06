@@ -1,4 +1,4 @@
--- Shared/Classes/BreathGlider.lua
+-- [Rare] Breath Glider | Water Breathing style. Smooth movement and slippery traps.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local BreathGlider = {
@@ -12,8 +12,9 @@ local BreathGlider = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Float forward without losing height
 				local vf = Instance.new("VectorForce")
-				vf.Force = Vector3.new(0, 4000, 0) -- Bias to lock Y
+				vf.Force = Vector3.new(0, 4000, 0)
 				vf.Attachment0 = hrp:FindFirstChildOfClass("Attachment") or Instance.new("Attachment", hrp)
 				vf.Parent = hrp
 				
@@ -36,6 +37,7 @@ local BreathGlider = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Leave a trail of ice for people to slip on
 				for i = 1, 6 do
 					task.wait(0.2)
 					local puddle = Instance.new("Part")
@@ -44,7 +46,7 @@ local BreathGlider = {
 					puddle.CanCollide = false
 					puddle.Transparency = 0.5
 					puddle.Color = Color3.fromRGB(150, 200, 255)
-					puddle.Material = Enum.Material.Ice -- Low friction
+					puddle.Material = Enum.Material.Ice 
 					puddle.Parent = workspace
 					game:GetService("Debris"):AddItem(puddle, 4)
 				end

@@ -1,4 +1,4 @@
--- Shared/Classes/FlowStriker.lua
+-- [Legendary] Flow Striker | Blue Lock vibes. Complete control over the ball and the field.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local FlowStriker = {
@@ -12,11 +12,10 @@ local FlowStriker = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Simulation of homing proj
+				-- Fire a shot that curves toward the nearest target
 				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 30, {character})
 				if target then
 					MovementUtil.ApplyKnockback(target, hrp.CFrame.LookVector, 40)
-					-- Homing logic usually requires a Part with BodyPosition
 				end
 			end
 		},
@@ -27,6 +26,7 @@ local FlowStriker = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Yank a foe right to your feet
 				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 15, {character})
 				if target then
 					local tHrp = target:FindFirstChild("HumanoidRootPart")

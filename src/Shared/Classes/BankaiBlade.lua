@@ -1,4 +1,4 @@
--- Shared/Classes/BankaiBlade.lua
+-- [Legendary] Bankai Blade | Ichigo vibes. Blink faster than they can see and nuke 'em.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local BankaiBlade = {
@@ -12,6 +12,7 @@ local BankaiBlade = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- 3 rapid dashes in a row
 				for i = 1, 3 do
 					MovementUtil.ApplyVelocity(hrp, hrp.CFrame.LookVector * 30, 0.1)
 					task.wait(0.25)
@@ -25,7 +26,7 @@ local BankaiBlade = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Wide KB wave
+				-- Wide wave of force to clear the area
 				local p = Instance.new("Part")
 				p.Size = Vector3.new(20, 5, 2)
 				p.CFrame = hrp.CFrame * CFrame.new(0, 0, -5)

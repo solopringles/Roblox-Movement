@@ -1,4 +1,4 @@
--- Shared/Classes/ShunpoGhost.lua
+-- [Rare] Shunpo Ghost | Bleach vibes. Now you see me, now you're dead. 
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local ShunpoGhost = {
@@ -12,6 +12,7 @@ local ShunpoGhost = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Instant teleport 10 studs ahead
 				local rayParams = RaycastParams.new()
 				rayParams.FilterType = Enum.RaycastFilterType.Exclude
 				rayParams.FilterDescendantsInstances = {character}
@@ -27,10 +28,11 @@ local ShunpoGhost = {
 			Name = "Phase",
 			CD = 14,
 			ExecuteServer = function(player, character)
+				-- Go ghost mode to avoid hits
 				for _, part in pairs(character:GetDescendants()) do
 					if part:IsA("BasePart") then
 						part.Transparency = 0.6
-						part.CanTouch = false -- Simulate phased
+						part.CanTouch = false 
 					end
 				end
 				

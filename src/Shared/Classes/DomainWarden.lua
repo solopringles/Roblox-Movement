@@ -1,11 +1,11 @@
--- Shared/Classes/DomainWarden.lua
+-- [Legendary] Domain Warden | Sukuna vibes. Control the battlefield, slip 'em up, or open the floor.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local DomainWarden = {
 	Name = "Domain Warden",
 	Tier = "Legendary",
 	Passives = {
-		MassResist = 1.25
+		MassResist = 1.25 -- Heavy footing, harder to shove
 	},
 	Abilities = {
 		Active1 = {
@@ -15,6 +15,7 @@ local DomainWarden = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Turn the floor beneath you into ice
 				local ice = Instance.new("Part")
 				ice.Size = Vector3.new(24, 0.2, 24)
 				ice.Position = hrp.Position - Vector3.new(0, 2.9, 0)
@@ -34,7 +35,7 @@ local DomainWarden = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Simulation of floor holes
+				-- Temporary "hole" in the floor by disabling collision
 				local rayRes = workspace:Raycast(hrp.Position + hrp.CFrame.LookVector * 5, Vector3.new(0, -10, 0))
 				if rayRes and rayRes.Instance then
 					local originalCollide = rayRes.Instance.CanCollide

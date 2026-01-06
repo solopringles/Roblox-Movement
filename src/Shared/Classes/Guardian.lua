@@ -1,4 +1,4 @@
--- Shared/Classes/Guardian.lua
+-- [Common] Guardian | Absolute unit. Unpushable and annoying.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local Guardian = {
@@ -6,7 +6,7 @@ local Guardian = {
 	Tier = "Common",
 	BaseWalkSpeed = 16,
 	Passives = {
-		MassResist = 1.3
+		MassResist = 1.3 -- You're a heavy boy
 	},
 	Abilities = {
 		Active1 = {
@@ -16,13 +16,13 @@ local Guardian = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Lock yourself in place
 				local vf = Instance.new("VectorForce")
 				vf.Force = Vector3.zero
 				vf.RelativeTo = Enum.ActuatorRelativeTo.World
 				vf.Attachment0 = hrp:FindFirstChildOfClass("Attachment") or Instance.new("Attachment", hrp)
 				vf.Parent = hrp
 				
-				-- Lock position simulation
 				local anchorPos = hrp.Position
 				local hb = game:GetService("RunService").Heartbeat:Connect(function()
 					if vf.Parent then
@@ -38,12 +38,13 @@ local Guardian = {
 			end
 		},
 		Active2 = {
-			Name = "Taunt Pull",
+			Name = "Magnetize",
 			CD = 15,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
+				-- Drag someone closer to you
 				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 10, {character})
 				if target then
 					local targetHrp = target:FindFirstChild("HumanoidRootPart")
