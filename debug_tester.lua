@@ -10,7 +10,10 @@ local StarterPlayerScripts = StarterPlayer:WaitForChild("StarterPlayerScripts")
 local serverInit = Instance.new("Script")
 serverInit.Name = "MovementSystem_Init"
 serverInit.Source = [[
-local MovementService = require(game.ReplicatedStorage.MovementSystem.MovementService)
+local ServerScriptService = game:GetService("ServerScriptService")
+local MovementSystem = ServerScriptService:WaitForChild("MovementSystem")
+local MovementService = require(MovementSystem:WaitForChild("MovementService"))
+
 MovementService.Init()
 print("✅ Movement Server Initialized")
 ]]
@@ -20,7 +23,13 @@ serverInit.Parent = ServerScriptService
 local clientInit = Instance.new("LocalScript")
 clientInit.Name = "MovementSystem_TestUI"
 clientInit.Source = [[
-local MovementController = require(game.StarterPlayer.StarterPlayerScripts.MovementSystem.MovementController)
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerScripts = LocalPlayer:WaitForChild("PlayerScripts")
+
+local MovementSystem = PlayerScripts:WaitForChild("MovementSystem")
+local MovementController = require(MovementSystem:WaitForChild("MovementController"))
+
 MovementController.Init()
 print("✅ Movement Client Initialized")
 

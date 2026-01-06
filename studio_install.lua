@@ -222,7 +222,7 @@ function MovementService.HandleAbility(player, abilityIdx) -- abilityIdx is "Act
 end
 
 return MovementService
-]], "Script")
+]], nil)
 
 AddScript("MovementController", ClientSystem, [[-- Client/MovementController.lua | Handles inputs and talks to the server.
 local MovementController = {}
@@ -263,7 +263,7 @@ function MovementController.OnInput(input, gameProcessed)
 end
 
 return MovementController
-]], "LocalScript")
+]], nil)
 
 -- 4. Classes (21)
 local classes = {
