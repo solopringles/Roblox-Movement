@@ -1,0 +1,26 @@
+{
+  "name": "RobloxMovement",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "MovementSystem": {
+        "$path": "src/Shared"
+      }
+    },
+
+    "ServerScriptService": {
+      "MovementSystem": {
+        "$path": "src/Server"
+      }
+    },
+
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "MovementSystem": {
+          "$path": "src/Client"
+        }
+      }
+    }
+  }
+}

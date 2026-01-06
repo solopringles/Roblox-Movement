@@ -28,6 +28,23 @@ Each class script in `src/Shared/Classes` follows this structure:
 - **Wall Kicks**: Some classes (like Accelerator) check for walls. If you find them being wonky, check the `RaycastParams` in `MovementUtil`.
 - **Scaling**: For Gear 5 or other size-changing moves, use `character:ScaleTo()`. The system handles mass adjustment, but watch out for clipping!
 
+## 🔌 How to Load into Roblox Studio
+
+You have two ways to get this code into your game:
+
+### Option A: Using Rojo (Recommended)
+This is the "pro" way. It keeps your code on your computer and syncs it automatically to Studio.
+1. Install the **Rojo** plugin in Roblox Studio and the **Rojo** extension in VS Code.
+2. In VS Code, press `F1` and run `Rojo: Serve`.
+3. In Roblox Studio, open the Rojo plugin and click **Connect**.
+4. The system will automatically build itself in `ReplicatedStorage`, `ServerScriptService`, and `StarterPlayerScripts`.
+
+### Option B: Manual (The Old Fashioned way)
+If you don't want to use Rojo, just copy-paste:
+1. **Shared**: Create a Folder in `ReplicatedStorage` named `MovementSystem`. Copy everything from `src/Shared` into it as `ModuleScripts`.
+2. **Server**: Create a Folder in `ServerScriptService` named `MovementSystem`. Copy `src/Server/MovementService.lua` into it as a `Script`.
+3. **Client**: Create a Folder in `StarterPlayer/StarterPlayerScripts` named `MovementSystem`. Copy `src/Client/MovementController.lua` into it as a `LocalScript`.
+
 ## 🔗 GitHub
 Since we're using Git, remember to pull before you start working so you don't get merge conflicts on the class files.
 
