@@ -7,20 +7,32 @@ local InfinityGod = {
 	Abilities = {
 		Active1 = {
 			Name = "Lapse Pull",
-			CD = 7,
-			ExecuteServer = function(player, character)
-				-- Pull everything to a point in front of you
-				local targetPos = character.HumanoidRootPart.Position + character.HumanoidRootPart.CFrame.LookVector * 15
-				MovementUtil.CreateExplosionPush(targetPos, 8, -400000) 
+			CD = 1,
+			ExecuteServer = function(player, character, targetPos)
+				local hrp = character:FindFirstChild("HumanoidRootPart")
+				if not hrp then return end
+				
+				-- Visual Feedback: Lapse Pull (Blue)
+				MovementUtil.ShowVisualFeedback(targetPos, 40, Color3.new(0, 0, 1), 0.5)
+				
+				task.delay(0.5, function()
+					MovementUtil.CreateExplosionPush(targetPos, 40, -1500000, {character})
+				end)
 			end
 		},
 		Active2 = {
 			Name = "Red Blast",
-			CD = 13,
-			ExecuteServer = function(player, character)
-				-- High-pressure blast at your cursor center 
-				local targetPos = character.HumanoidRootPart.Position + character.HumanoidRootPart.CFrame.LookVector * 8
-				MovementUtil.CreateExplosionPush(targetPos, 8, 700000)
+			CD = 1,
+			ExecuteServer = function(player, character, targetPos)
+				local hrp = character:FindFirstChild("HumanoidRootPart")
+				if not hrp then return end
+				
+				-- Visual Feedback: Red Blast
+				MovementUtil.ShowVisualFeedback(targetPos, 40, Color3.new(1, 0, 0), 0.5)
+				
+				task.delay(0.5, function()
+					MovementUtil.CreateExplosionPush(targetPos, 40, 2500000, {character})
+				end)
 			end
 		}
 	}

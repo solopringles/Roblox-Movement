@@ -7,10 +7,13 @@ local TrapGenius = {
 	Abilities = {
 		Active1 = {
 			Name = "Momentum Kill",
-			CD = 10,
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
+				
+				-- Visual Feedback: Freeze burst
+				MovementUtil.ShowVisualFeedback(hrp.Position, 10, Color3.new(0.5, 0.8, 1), 0.3)
 				
 				-- Stop dead in your tracks
 				hrp.AssemblyLinearVelocity = Vector3.zero
@@ -19,14 +22,17 @@ local TrapGenius = {
 		},
 		Active2 = {
 			Name = "Leap Burst",
-			CD = 13,
-			ExecuteServer = function(player, character)
+			CD = 1,
+			ExecuteServer = function(player, character, targetPos)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Big jump toward where you're looking
-				hrp.AssemblyLinearVelocity = hrp.CFrame.LookVector * 70
-				MovementUtil.PlaySound(3413531338, hrp)
+				-- Visual Feedback: Launch burst
+				MovementUtil.ShowVisualFeedback(hrp.Position, 12, Color3.new(0.8, 1, 0.8), 0.4)
+				
+				-- Big jump toward cursor
+				local aimDir = (targetPos - hrp.Position).Unit
+				MovementUtil.ApplyVelocity(hrp, aimDir * 140, 0.4) -- Buffed from 75
 			end
 		}
 	}

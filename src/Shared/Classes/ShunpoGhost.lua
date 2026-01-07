@@ -7,40 +7,54 @@ local ShunpoGhost = {
 	Abilities = {
 		Active1 = {
 			Name = "Blink",
-			CD = 8,
-			ExecuteServer = function(player, character)
+			CD = 1,
+			ExecuteServer = function(player, character, targetPos)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Instant teleport 10 studs ahead
+				-- Visual Feedback: Blink start
+				MovementUtil.ShowVisualFeedback(hrp.Position, 10, Color3.new(0.2, 0.2, 0.2), 0.3)
+				
+				-- Blink toward cursor (Max 40 studs)
+				local aimDir = (targetPos - hrp.Position).Unit
+				if (targetPos - hrp.Position).Magnitude > 40 then 
+					targetPos = hrp.Position + aimDir * 40
+				end
+				
 				local rayParams = RaycastParams.new()
 				rayParams.FilterType = Enum.RaycastFilterType.Exclude
 				rayParams.FilterDescendantsInstances = {character}
 				
-				local result = workspace:Raycast(hrp.Position, hrp.CFrame.LookVector * 10, rayParams)
-				local targetPos = result and result.Position or (hrp.Position + hrp.CFrame.LookVector * 10)
+				local result = workspace:Raycast(hrp.Position, (targetPos - hrp.Position), rayParams)
+				local finalPos = result and result.Position or targetPos
 				
-				hrp.CFrame = CFrame.new(targetPos) * hrp.CFrame.Rotation
-				MovementUtil.PlaySound(3413531338, hrp)
+				hrp.CFrame = CFrame.new(finalPos) * hrp.CFrame.Rotation
+				
+				-- Visual Feedback: Blink end
+				MovementUtil.ShowVisualFeedback(hrp.Position, 10, Color3.new(0.2, 0.2, 0.2), 0.3)
 			end
 		},
 		Active2 = {
 			Name = "Phase",
-			CD = 14,
+			CD = 1,
 			ExecuteServer = function(player, character)
-				-- Go ghost mode to avoid hits
+				-- FULL INVISIBILITY
 				for _, part in pairs(character:GetDescendants()) do
 					if part:IsA("BasePart") then
-						part.Transparency = 0.6
+						part.Transparency = 1
 						part.CanTouch = false 
+					elseif part:IsA("Decal") then
+						part.Transparency = 1
 					end
 				end
 				
-				task.delay(2, function()
+				task.delay(4, function()
 					for _, part in pairs(character:GetDescendants()) do
 						if part:IsA("BasePart") then
 							part.Transparency = (part.Name == "HumanoidRootPart") and 1 or 0
 							part.CanTouch = true
+						elseif part:IsA("Decal") then
+							part.Transparency = 0
 						end
 					end
 				end)

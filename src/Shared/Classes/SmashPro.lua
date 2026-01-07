@@ -7,30 +7,31 @@ local SmashPro = {
 	Abilities = {
 		Active1 = {
 			Name = "Detroit Smash",
-			CD = 16,
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				local humanoid = character:FindFirstChild("Humanoid")
 				if not hrp or not humanoid then return end
 				
 				-- Huge area-of-effect push downward (simulated ground pound)
-				MovementUtil.CreateExplosionPush(hrp.Position, 10, 600000)
+				MovementUtil.CreateExplosionPush(hrp.Position, 10, 600000, {character}) -- Added immunity
 				humanoid.WalkSpeed = 16 * 0.5
 				task.delay(1.5, function() humanoid.WalkSpeed = 16 end)
 			end
 		},
 		Active2 = {
 			Name = "Delaware Flick",
-			CD = 11,
-			ExecuteServer = function(player, character)
+			CD = 1,
+			ExecuteServer = function(player, character, targetPos)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- High-speed finger flick from 15 studs away
-				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 15, {character})
-				if target then
-					MovementUtil.ApplyKnockback(target, hrp.CFrame.LookVector, 75)
-				end
+				-- Visual Feedback: Air pressure pulse
+				MovementUtil.ShowVisualFeedback(hrp.Position + (targetPos - hrp.Position).Unit * 10, 15, Color3.new(0.9, 0.9, 1), 0.4)
+				
+				-- CONSISTENT PRESSURE: High speed flick toward CURSOR
+				local aimDir = (targetPos - hrp.Position).Unit
+				MovementUtil.CreateExplosionPush(hrp.Position + aimDir * 8, 15, 900000, {character})
 			end
 		}
 	}

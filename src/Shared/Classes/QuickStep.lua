@@ -11,31 +11,35 @@ local QuickStep = {
 	Abilities = {
 		Active1 = {
 			Name = "Dash",
-			CD = 10,
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Simple forward dash
+				-- Visual Feedback: Wind burst
+				MovementUtil.ShowVisualFeedback(hrp.Position, 8, Color3.new(1, 1, 1), 0.3)
+				
+				-- Use the reliable ApplyVelocity helper instead of raw velocity
 				local dashDir = hrp.CFrame.LookVector
-				hrp.AssemblyLinearVelocity = dashDir * 75
-				MovementUtil.PlaySound(3413531338, hrp) 
+				MovementUtil.ApplyVelocity(hrp, dashDir * 150, 0.25) -- Buffed from 80
 			end
 		},
 		Active2 = {
 			Name = "Slash Wave",
-			CD = 12,
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Poke someone from a distance
+				-- Visual Feedback: Slash line
+				MovementUtil.ShowVisualFeedback(hrp.Position + hrp.CFrame.LookVector * 10, 15, Color3.new(1, 0.8, 0.8), 0.4, Enum.PartType.Cylinder)
+				
+				-- Increased range and impact
 				local forward = hrp.CFrame.LookVector
-				local target = MovementUtil.GetNearestInRay(hrp.Position, forward, 12, {character})
+				local target = MovementUtil.GetNearestInRay(hrp.Position, forward, 60, {character}) -- Buffed from 20
 				
 				if target then
-					MovementUtil.ApplyKnockback(target, forward, 60)
-					MovementUtil.PlaySound(3413531338, target:FindFirstChild("HumanoidRootPart"))
+					MovementUtil.ApplyKnockback(target, forward, 150) -- Buffed from 75
 				end
 			end
 		}

@@ -9,40 +9,52 @@ local DomainWarden = {
 	},
 	Abilities = {
 		Active1 = {
-			Name = "Ice Zone",
-			CD = 18,
+			Name = "Flash Zone",
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Turn the floor beneath you into ice
-				local ice = Instance.new("Part")
-				ice.Size = Vector3.new(24, 0.2, 24)
-				ice.Position = hrp.Position - Vector3.new(0, 2.9, 0)
-				ice.Transparency = 0.5
-				ice.Color = Color3.fromRGB(100, 200, 255)
-				ice.Material = Enum.Material.Ice
-				ice.Anchored = true
-				ice.CanCollide = true
-				ice.Parent = workspace
-				game:GetService("Debris"):AddItem(ice, 5)
+				-- Visual Feedback: Flash Zone (Purple/Black)
+				MovementUtil.ShowVisualFeedback(hrp.Position, 25, Color3.new(0.5, 0, 0.5), 1.5)
+				
+				-- STUN / FLASH: Blind everyone nearby momentarily
+				-- Standardized Ragdoll effect
+				local parts = workspace:GetPartBoundsInRadius(hrp.Position, 25)
+				local seen = {}
+				for _, part in pairs(parts) do
+					local m = part:FindFirstAncestorOfClass("Model")
+					if m and m:FindFirstChild("Humanoid") and m ~= character and not seen[m] then
+						seen[m] = true
+						local hum = m.Humanoid
+						hum.PlatformStand = true
+						task.delay(1.5, function() hum.PlatformStand = false end)
+					end
+				end
+				
+				-- TANK BUFF: While in the zone, you are sturdy
+				MovementUtil.ApplyTankBuff(character, 5, 40, 0.4)
 			end
 		},
 		Active2 = {
 			Name = "Cleave Line",
-			CD = 16,
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Temporary "hole" in the floor by disabling collision
-				local rayRes = workspace:Raycast(hrp.Position + hrp.CFrame.LookVector * 5, Vector3.new(0, -10, 0))
-				if rayRes and rayRes.Instance then
-					local originalCollide = rayRes.Instance.CanCollide
-					rayRes.Instance.CanCollide = false
-					task.delay(3, function()
-						rayRes.Instance.CanCollide = originalCollide
-					end)
+				-- Visual Feedback: Dark cleave path
+				MovementUtil.ShowVisualFeedback(hrp.Position + hrp.CFrame.LookVector * 20, 30, Color3.new(0, 0, 0), 0.4, Enum.PartType.Cylinder)
+				
+				-- Deletes parts in a line (SAFETY ADDED: Ignore floors/large parts)
+				local parts = workspace:GetPartBoundsInBox(hrp.CFrame * CFrame.new(0,0,-20), Vector3.new(10, 5, 40))
+				for _, part in pairs(parts) do
+					if part.Size.X > 50 or part.Size.Z > 50 then continue end
+					if part.Name:lower():find("baseplate") or part.Name:lower():find("floor") then continue end
+					
+					if not part:FindFirstAncestorOfClass("Model") then
+						part:Destroy()
+					end
 				end
 			end
 		}

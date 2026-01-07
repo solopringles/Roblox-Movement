@@ -7,7 +7,7 @@ local UltimateGates = {
 	Abilities = {
 		Active1 = {
 			Name = "Air Walk",
-			CD = 9,
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
@@ -21,25 +21,32 @@ local UltimateGates = {
 					plat.Transparency = 1
 					plat.Parent = workspace
 					game:GetService("Debris"):AddItem(plat, 0.5)
+					
+					-- Visual Feedback: Red air ripple
+					MovementUtil.ShowVisualFeedback(plat.Position, 4, Color3.new(1, 0.2, 0.2), 0.3, Enum.PartType.Cylinder)
+					
 					task.wait(0.2)
 				end
 			end
 		},
 		Active2 = {
 			Name = "Night Guy Fist",
-			CD = 20,
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
 				-- Mega fling your target, but you'll be tired after
-				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 20, {character})
+				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 60, {character}) -- Buffed from 20
 				if target then
 					local tHum = target:FindFirstChild("Humanoid")
 					if tHum then
+						-- Visual Feedback: Crimson impact
+						MovementUtil.ShowVisualFeedback(tHum.Parent.PrimaryPart.Position, 30, Color3.new(0.5, 0, 0), 0.8)
+						
 						tHum.PlatformStand = true
 						task.delay(1, function() tHum.PlatformStand = false end)
-						MovementUtil.ApplyKnockback(target, hrp.CFrame.LookVector, 500)
+						MovementUtil.ApplyKnockback(target, hrp.CFrame.LookVector, 2500) -- Buffed from 500
 					end
 				end
 				

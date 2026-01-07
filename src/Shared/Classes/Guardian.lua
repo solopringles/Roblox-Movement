@@ -11,46 +11,58 @@ local Guardian = {
 	Abilities = {
 		Active1 = {
 			Name = "Iron Body",
-			CD = 12,
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Lock yourself in place
-				local vf = Instance.new("VectorForce")
-				vf.Force = Vector3.zero
-				vf.RelativeTo = Enum.ActuatorRelativeTo.World
-				vf.Attachment0 = hrp:FindFirstChildOfClass("Attachment") or Instance.new("Attachment", hrp)
-				vf.Parent = hrp
+				-- Visual Feedback: Golden shield aura
+				MovementUtil.ShowVisualFeedback(hrp.Position, 10, Color3.new(1, 0.8, 0), 4)
 				
-				local anchorPos = hrp.Position
-				local hb = game:GetService("RunService").Heartbeat:Connect(function()
-					if vf.Parent then
-						local dist = (anchorPos - hrp.Position)
-						vf.Force = dist * 8000
-					end
-				end)
+				-- Lock yourself in place (FIXED: Uses Velocity Clamp instead of Spring force)
+				local doc = Instance.new("LinearVelocity")
+				doc.VectorVelocity = Vector3.new(0, 0, 0) -- Don't move.
+				doc.MaxForce = math.huge -- I said, DON'T MOVE.
+				doc.RelativeTo = Enum.ActuatorRelativeTo.World
+				doc.Attachment0 = hrp:FindFirstChildOfClass("Attachment") or Instance.new("Attachment", hrp)
+				doc.Parent = hrp
 				
-				task.delay(2.5, function()
-					vf:Destroy()
-					hb:Disconnect()
+				-- Stop spinning too
+				local av = Instance.new("AngularVelocity")
+				av.AngularVelocity = Vector3.new(0, 0, 0)
+				av.MaxTorque = math.huge
+				av.Attachment0 = doc.Attachment0
+				av.Parent = hrp
+				
+				-- Apply TANK BUFF: 50 Health, 30% reduction, for 4s
+				MovementUtil.ApplyTankBuff(character, 4, 50, 0.3)
+				
+				task.delay(4, function()
+					doc:Destroy()
+					av:Destroy()
 				end)
 			end
 		},
 		Active2 = {
 			Name = "Magnetize",
-			CD = 15,
-			ExecuteServer = function(player, character)
+			CD = 1,
+			ExecuteServer = function(player, character, targetPos)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Drag someone closer to you
-				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 10, {character})
+				-- Visual Feedback: Magnetic pull line
+				MovementUtil.ShowVisualFeedback(targetPos, 5, Color3.new(0, 1, 1), 0.5)
+				
+				-- Use cursor position if possible, otherwise look vector
+				local dir = (targetPos - hrp.Position).Unit
+				local target = MovementUtil.GetNearestInRay(hrp.Position, dir, 80, {character}) -- Buffed from 30
+				
 				if target then
-					local targetHrp = target:FindFirstChild("HumanoidRootPart")
-					if targetHrp then
-						local dir = (hrp.Position - targetHrp.Position).Unit
-						targetHrp.AssemblyLinearVelocity = dir * 45
+					local tHrp = target:FindFirstChild("HumanoidRootPart")
+					if tHrp then
+						-- Pull TOWARDS the player
+						local pullDir = (hrp.Position - tHrp.Position).Unit
+						MovementUtil.ApplyKnockback(target, pullDir, 120) -- Buffed from 50
 					end
 				end
 			end

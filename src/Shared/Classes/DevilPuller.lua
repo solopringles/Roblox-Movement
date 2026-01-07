@@ -7,35 +7,40 @@ local DevilPuller = {
 	Abilities = {
 		Active1 = {
 			Name = "Chain Pull",
-			CD = 12,
-			ExecuteServer = function(player, character)
+			CD = 1,
+			ExecuteServer = function(player, character, targetPos)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Drag someone toward you from 15 studs away
-				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 15, {character})
+				-- Visual Feedback: Chain tether
+				MovementUtil.ShowVisualFeedback(targetPos, 8, Color3.new(0.1, 0.1, 0.1), 0.5)
+				
+				-- Aim with cursor, range 80
+				local aimDir = (targetPos - hrp.Position).Unit
+				local target = MovementUtil.GetNearestInRay(hrp.Position, aimDir, 80, {character}) -- Buffed from 30
 				if target then
-					local tHrp = target:FindFirstChild("HumanoidRootPart")
-					if tHrp then
-						local dir = (hrp.Position - tHrp.Position).Unit
-						tHrp.AssemblyLinearVelocity = dir * 50
-					end
+					local pullDir = (hrp.Position - target.PrimaryPart.Position).Unit
+					MovementUtil.ApplyKnockback(target, pullDir, 160) -- Buffed from 80
 				end
 			end
 		},
 		Active2 = {
 			Name = "Latch Pulse",
-			CD = 18,
-			ExecuteServer = function(player, character)
+			CD = 1,
+			ExecuteServer = function(player, character, targetPos)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Send out rhythmic pulses to keep 'em in check
+				-- Visual Feedback: Pulse area
+				MovementUtil.ShowVisualFeedback(targetPos, 20, Color3.new(0.3, 0.1, 0.1), 1.2)
+				
+				-- Pulses toward cursor
+				local aimDir = (targetPos - hrp.Position).Unit
 				for i = 1, 2 do
 					task.wait(0.6)
-					local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 10, {character})
+					local target = MovementUtil.GetNearestInRay(hrp.Position, aimDir, 50, {character}) -- Buffed from 20
 					if target then
-						MovementUtil.ApplyKnockback(target, hrp.CFrame.LookVector, 35)
+						MovementUtil.ApplyKnockback(target, aimDir, 100) -- Buffed from 45
 					end
 				end
 			end

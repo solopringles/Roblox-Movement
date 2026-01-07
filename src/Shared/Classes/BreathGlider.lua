@@ -1,4 +1,4 @@
--- [Rare] Breath Glider | Water Breathing style. Smooth movement and slippery traps.
+-- [Rare] Breath Glider | Water Breathing style. Smooth movement and flow.
 local MovementUtil = require(script.Parent.Parent.MovementUtil)
 
 local BreathGlider = {
@@ -6,49 +6,58 @@ local BreathGlider = {
 	Tier = "Rare",
 	Abilities = {
 		Active1 = {
-			Name = "Forward Glide",
-			CD = 12,
+			Name = "Riptide Surge",
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Float forward without losing height
-				local vf = Instance.new("VectorForce")
-				vf.Force = Vector3.new(0, 4000, 0)
-				vf.Attachment0 = hrp:FindFirstChildOfClass("Attachment") or Instance.new("Attachment", hrp)
-				vf.Parent = hrp
+				-- Visual Feedback: Water burst
+				MovementUtil.ShowVisualFeedback(hrp.Position, 12, Color3.new(0.2, 0.6, 1), 0.4)
 				
-				local hb = game:GetService("RunService").Heartbeat:Connect(function()
-					if vf.Parent then
-						hrp.AssemblyLinearVelocity = Vector3.new(hrp.AssemblyLinearVelocity.X, 0, hrp.AssemblyLinearVelocity.Z)
+				-- Forceful surge forward, clearing all previous momentum
+				local dashDir = hrp.CFrame.LookVector
+				MovementUtil.ApplyVelocity(hrp, dashDir * 180, 0.4)
+				
+				-- Fling anyone you pass through
+				task.spawn(function()
+					local start = tick()
+					while tick() - start < 0.4 do
+						local parts = workspace:GetPartBoundsInRadius(hrp.Position, 10)
+						for _, part in pairs(parts) do
+							local m = part:FindFirstAncestorOfClass("Model")
+							if m and m:FindFirstChild("Humanoid") and m ~= character then
+								MovementUtil.ApplyKnockback(m, dashDir + Vector3.new(0,0.5,0), 120)
+							end
+						end
+						task.wait(0.05)
 					end
-				end)
-				
-				task.delay(3, function()
-					vf:Destroy()
-					hb:Disconnect()
 				end)
 			end
 		},
 		Active2 = {
-			Name = "Slippery Puddles",
-			CD = 14,
+			Name = "Abyssal Anchor",
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
 				
-				-- Leave a trail of ice for people to slip on
-				for i = 1, 6 do
-					task.wait(0.2)
-					local puddle = Instance.new("Part")
-					puddle.Size = Vector3.new(4, 0.2, 4)
-					puddle.Position = hrp.Position - Vector3.new(0, 2.8, 0)
-					puddle.CanCollide = false
-					puddle.Transparency = 0.5
-					puddle.Color = Color3.fromRGB(150, 200, 255)
-					puddle.Material = Enum.Material.Ice 
-					puddle.Parent = workspace
-					game:GetService("Debris"):AddItem(puddle, 4)
+				-- Visual Feedback: Depth bubble
+				MovementUtil.ShowVisualFeedback(hrp.Position, 30, Color3.new(0, 0, 0.5), 0.6)
+				
+				-- Weighted pull down
+				MovementUtil.CreateExplosionPush(hrp.Position, 30, -900000, {character})
+				
+				local parts = workspace:GetPartBoundsInRadius(hrp.Position, 35)
+				local seen = {}
+				for _, part in pairs(parts) do
+					local m = part:FindFirstAncestorOfClass("Model")
+					if m and m:FindFirstChild("Humanoid") and m ~= character and not seen[m] then
+						seen[m] = true
+						local hum = m.Humanoid
+						hum.PlatformStand = true
+						task.delay(2, function() hum.PlatformStand = false end)
+					end
 				end
 			end
 		}

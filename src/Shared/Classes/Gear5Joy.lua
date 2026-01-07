@@ -7,7 +7,7 @@ local Gear5Joy = {
 	Abilities = {
 		Active1 = {
 			Name = "Floor Ripple",
-			CD = 8,
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
@@ -16,13 +16,18 @@ local Gear5Joy = {
 				for i = 1, 4 do
 					task.wait(0.2)
 					local dir = Vector3.new(math.random(-1,1), 0, math.random(-1,1)).Unit
-					MovementUtil.CreateExplosionPush(hrp.Position + dir * 5, 5, 400000)
+					local pos = hrp.Position + dir * 5
+					
+					-- Visual Feedback: Rubber ripple
+					MovementUtil.ShowVisualFeedback(pos, 8, Color3.new(1, 1, 1), 0.4, Enum.PartType.Ball)
+					
+					MovementUtil.CreateExplosionPush(pos, 5, 400000, {character}) -- Added immunity
 				end
 			end
 		},
 		Active2 = {
 			Name = "Gigant",
-			CD = 14,
+			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp then return end
@@ -30,6 +35,9 @@ local Gear5Joy = {
 				-- Grow massive for 5 seconds
 				character:ScaleTo(1.3)
 				hrp.AssemblyMass *= 1.3
+				
+				-- Visual Feedback: Transformation burst
+				MovementUtil.ShowVisualFeedback(hrp.Position, 15, Color3.new(1, 1, 1), 0.5)
 				
 				task.delay(5, function()
 					character:ScaleTo(1)
