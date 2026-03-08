@@ -4,6 +4,14 @@ local MovementUtil = {}
 -- Tag for when someone is dodging/invincible
 MovementUtil.IFRAME_TAG = "IFrameActive"
 
+local function SafeUnit(vector, fallback)
+	if vector.Magnitude > 0.001 then
+		return vector.Unit
+	end
+
+	return fallback or Vector3.new(0, 1, 0)
+end
+
 -- Snap a part to a specific speed for a duration
 -- Snap a part to a specific speed for a duration
 function MovementUtil.ApplyVelocity(humanoidRootPart, velocity, duration)
@@ -46,6 +54,10 @@ function MovementUtil.ApplyKnockback(targetCharacter, direction, force)
 	local hum = targetCharacter:FindFirstChild("Humanoid")
 	
 	if hrp and hum then
+		local finalDirection = SafeUnit(direction, hrp.CFrame.LookVector)
+		local finalForce = math.clamp(force, -220, 220)
+		local recoverDelay = math.clamp(math.abs(finalForce) / 220, 0.35, 1)
+
 		-- 1. Stop them spinning wildly
 		hrp.AssemblyAngularVelocity = Vector3.zero
 		
@@ -53,15 +65,17 @@ function MovementUtil.ApplyKnockback(targetCharacter, direction, force)
 		hum.PlatformStand = true
 		hum:ChangeState(Enum.HumanoidStateType.Physics) -- Force physics engine takeover
 		
-		task.delay(0.6, function()
-			hum.PlatformStand = false
-			hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+		task.delay(recoverDelay, function()
+			if hum.Parent then
+				hum.PlatformStand = false
+				hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+			end
 		end)
 		
 		-- 3. Apply controlled velocity
 		hrp.AssemblyLinearVelocity = Vector3.zero 
-		hrp:ApplyImpulse(direction * hrp.AssemblyMass * 2.5) -- Increased slightly
-		hrp.AssemblyLinearVelocity = direction * force
+		hrp:ApplyImpulse(finalDirection * hrp.AssemblyMass * math.clamp(math.abs(finalForce) / 60, 1, 3))
+		hrp.AssemblyLinearVelocity = finalDirection * finalForce
 		
 		print("💨 Applied standardized ragdoll knockback to: " .. targetCharacter.Name)
 	end
@@ -84,10 +98,14 @@ function MovementUtil.ApplyTankBuff(character, duration, healthBoost, reduction)
 	tag.Parent = character
 	
 	-- 3. Temporary Regen loop
+	local regenBudget = healthBoost * 0.5
+	local regenRate = math.max((healthBoost * 0.5) / math.max(duration, 0.1), 2)
 	local regenConnection
-	regenConnection = game:GetService("RunService").Heartbeat:Connect(function()
-		if hum.Parent and hum.Health < hum.MaxHealth then
-			hum.Health += 0.2 -- Passive regen during buff
+	regenConnection = game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
+		if hum.Parent and hum.Health < hum.MaxHealth and regenBudget > 0 then
+			local healAmount = math.min(regenRate * deltaTime, regenBudget, hum.MaxHealth - hum.Health)
+			hum.Health += healAmount
+			regenBudget -= healAmount
 		end
 	end)
 	
@@ -209,11 +227,11 @@ function MovementUtil.CreateExplosionPush(position, radius, pressure, ignoreList
 			
 			local hrp = model:FindFirstChild("HumanoidRootPart")
 			if hrp then
-				local dir = (hrp.Position - position).Unit
+				local dir = SafeUnit(hrp.Position - position, Vector3.new(0, 1, 0))
 				-- Calculate falloff? No, max power asked by user!
 				-- Convert pressure to velocity estimate roughly
 				-- Pressure 500k is roughly Velocity 100ish in previous scaling
-				local force = math.clamp(pressure / 5000, 50, 200) 
+				local force = math.clamp(math.abs(pressure) / 5000, 50, 180)
 				if pressure < 0 then force = -force end -- Pull handling
 				
 				MovementUtil.ApplyKnockback(model, dir, force)

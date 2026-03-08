@@ -19,8 +19,11 @@ local DevilPuller = {
 				local aimDir = (targetPos - hrp.Position).Unit
 				local target = MovementUtil.GetNearestInRay(hrp.Position, aimDir, 80, {character}) -- Buffed from 30
 				if target then
-					local pullDir = (hrp.Position - target.PrimaryPart.Position).Unit
-					MovementUtil.ApplyKnockback(target, pullDir, 160) -- Buffed from 80
+					local targetHrp = target:FindFirstChild("HumanoidRootPart")
+					if targetHrp then
+						local pullDir = (hrp.Position - targetHrp.Position).Unit
+						MovementUtil.ApplyKnockback(target, pullDir, 160) -- Buffed from 80
+					end
 				end
 			end
 		},

@@ -10,6 +10,7 @@ local AbilityRemote = RemoteFolder:WaitForChild("TriggerAbility")
 local SetClassRemote = RemoteFolder:WaitForChild("SetClass")
 
 local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
 
 function MovementController.Init()
 	-- Watch for key presses
@@ -27,12 +28,17 @@ end
 function MovementController.OnInput(input, gameProcessed)
 	-- Ignore if typing in chat
 	if gameProcessed then return end
+
+	local targetPos
+	if Mouse and Mouse.Hit then
+		targetPos = Mouse.Hit.Position
+	end
 	
 	-- Q/E for abilities
 	if input.KeyCode == Enum.KeyCode.Q then
-		AbilityRemote:FireServer("Active1")
+		AbilityRemote:FireServer("Active1", targetPos)
 	elseif input.KeyCode == Enum.KeyCode.E then
-		AbilityRemote:FireServer("Active2")
+		AbilityRemote:FireServer("Active2", targetPos)
 	end
 end
 

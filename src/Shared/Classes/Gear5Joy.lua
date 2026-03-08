@@ -15,7 +15,8 @@ local Gear5Joy = {
 				-- The floor turns to rubber and starts bouncing everyone
 				for i = 1, 4 do
 					task.wait(0.2)
-					local dir = Vector3.new(math.random(-1,1), 0, math.random(-1,1)).Unit
+					local randomOffset = Vector3.new(math.random(-10, 10), 0, math.random(-10, 10))
+					local dir = randomOffset.Magnitude > 0 and randomOffset.Unit or hrp.CFrame.LookVector
 					local pos = hrp.Position + dir * 5
 					
 					-- Visual Feedback: Rubber ripple
@@ -30,17 +31,18 @@ local Gear5Joy = {
 			CD = 1,
 			ExecuteServer = function(player, character)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
-				if not hrp then return end
+				if not hrp or character:GetAttribute("Gear5GigantActive") then return end
 				
-				-- Grow massive for 5 seconds
-				character:ScaleTo(1.3)
-				hrp.AssemblyMass *= 1.3
+				-- Grow massive for 4 seconds
+				character:SetAttribute("Gear5GigantActive", true)
+				character:ScaleTo(1.2)
 				
 				-- Visual Feedback: Transformation burst
 				MovementUtil.ShowVisualFeedback(hrp.Position, 15, Color3.new(1, 1, 1), 0.5)
 				
-				task.delay(5, function()
+				task.delay(4, function()
 					character:ScaleTo(1)
+					character:SetAttribute("Gear5GigantActive", nil)
 				end)
 			end
 		}

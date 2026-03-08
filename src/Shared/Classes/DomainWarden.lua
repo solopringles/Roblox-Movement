@@ -49,8 +49,7 @@ local DomainWarden = {
 				-- Deletes parts in a line (SAFETY ADDED: Ignore floors/large parts)
 				local parts = workspace:GetPartBoundsInBox(hrp.CFrame * CFrame.new(0,0,-20), Vector3.new(10, 5, 40))
 				for _, part in pairs(parts) do
-					if part.Size.X > 50 or part.Size.Z > 50 then continue end
-					if part.Name:lower():find("baseplate") or part.Name:lower():find("floor") then continue end
+					if not part:IsA("BasePart") or part.Anchored then continue end
 					
 					if not part:FindFirstAncestorOfClass("Model") then
 						part:Destroy()

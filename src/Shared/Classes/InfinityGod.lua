@@ -13,10 +13,10 @@ local InfinityGod = {
 				if not hrp then return end
 				
 				-- Visual Feedback: Lapse Pull (Blue)
-				MovementUtil.ShowVisualFeedback(targetPos, 40, Color3.new(0, 0, 1), 0.5)
+				MovementUtil.ShowVisualFeedback(targetPos, 32, Color3.new(0, 0, 1), 0.5)
 				
 				task.delay(0.5, function()
-					MovementUtil.CreateExplosionPush(targetPos, 40, -1500000, {character})
+					MovementUtil.CreateExplosionPush(targetPos, 32, -750000, {character})
 				end)
 			end
 		},
@@ -28,10 +28,10 @@ local InfinityGod = {
 				if not hrp then return end
 				
 				-- Visual Feedback: Red Blast
-				MovementUtil.ShowVisualFeedback(targetPos, 40, Color3.new(1, 0, 0), 0.5)
+				MovementUtil.ShowVisualFeedback(targetPos, 36, Color3.new(1, 0, 0), 0.5)
 				
 				task.delay(0.5, function()
-					MovementUtil.CreateExplosionPush(targetPos, 40, 2500000, {character})
+					MovementUtil.CreateExplosionPush(targetPos, 36, 1100000, {character})
 				end)
 			end
 		}

@@ -24,18 +24,62 @@ SetClassRemote.Parent = RemoteFolder
 
 -- Keep track of who's what and their CD status
 local PlayerData = {}
+local MAX_TARGET_DISTANCE = 120
+local TIER_COOLDOWN_FLOOR = {
+	Common = 1.5,
+	Rare = 1.75,
+	Legendary = 2,
+	Mythic = 2.5,
+}
+
+local function EnsurePlayerData(player)
+	PlayerData[player] = PlayerData[player] or {
+		Class = nil,
+		Cooldowns = {},
+		Stamina = 100
+	}
+
+	return PlayerData[player]
+end
+
+local function SanitizeTargetPosition(character, targetPos)
+	local hrp = character and character:FindFirstChild("HumanoidRootPart")
+	if not hrp then
+		return nil
+	end
+
+	if typeof(targetPos) ~= "Vector3" then
+		return hrp.Position + hrp.CFrame.LookVector * 40
+	end
+
+	if targetPos.X ~= targetPos.X or targetPos.Y ~= targetPos.Y or targetPos.Z ~= targetPos.Z then
+		return hrp.Position + hrp.CFrame.LookVector * 40
+	end
+
+	local offset = targetPos - hrp.Position
+	if offset.Magnitude < 1 then
+		return hrp.Position + hrp.CFrame.LookVector * 8
+	end
+
+	if offset.Magnitude > MAX_TARGET_DISTANCE then
+		return hrp.Position + offset.Unit * MAX_TARGET_DISTANCE
+	end
+
+	return targetPos
+end
 
 function MovementService.Init()
 	SetClassRemote.OnServerInvoke = MovementService.HandleSetClass
 	AbilityRemote.OnServerEvent:Connect(MovementService.HandleAbility)
 	
 	-- Setup fresh data when someone joins
-	Players.PlayerAdded:Connect(function(player)
-		PlayerData[player] = {
-			Class = nil,
-			Cooldowns = {},
-			Stamina = 100
-		}
+	for _, player in ipairs(Players:GetPlayers()) do
+		EnsurePlayerData(player)
+	end
+
+	Players.PlayerAdded:Connect(EnsurePlayerData)
+	Players.PlayerRemoving:Connect(function(player)
+		PlayerData[player] = nil
 	end)
 end
 
@@ -48,7 +92,9 @@ function MovementService.HandleSetClass(player, className)
 	end
 	
 	local classModule = require(classModuleScript)
-	PlayerData[player].Class = classModule
+	local data = EnsurePlayerData(player)
+	data.Class = classModule
+	data.Cooldowns = {}
 	
 	-- Update player stats (WalkSpeed, JumpPower, etc.)
 	local character = player.Character or player.CharacterAdded:Wait()
@@ -66,8 +112,8 @@ function MovementService.HandleSetClass(player, className)
 	return true
 end
 
-function MovementService.HandleAbility(player, abilityIdx) -- abilityIdx is "Active1" or "Active2"
-	local data = PlayerData[player]
+function MovementService.HandleAbility(player, abilityIdx, targetPos) -- abilityIdx is "Active1" or "Active2"
+	local data = EnsurePlayerData(player)
 	if not data or not data.Class then return end
 	
 	local class = data.Class
@@ -77,13 +123,23 @@ function MovementService.HandleAbility(player, abilityIdx) -- abilityIdx is "Act
 	
 	-- Basic CD check so people don't spam
 	local now = tick()
-	if data.Cooldowns[abilityIdx] and now - data.Cooldowns[abilityIdx] < abilityData.CD then
+	local cooldown = math.max(abilityData.CD or 0, TIER_COOLDOWN_FLOOR[class.Tier] or 1)
+	if data.Cooldowns[abilityIdx] and now - data.Cooldowns[abilityIdx] < cooldown then
 		return
 	end
 	
 	-- Fire off the server logic in the module
+	local character = player.Character
+	if not character or not character.Parent then
+		return
+	end
+
 	if abilityData.ExecuteServer then
-		abilityData.ExecuteServer(player, player.Character)
+		local ok, err = pcall(abilityData.ExecuteServer, player, character, SanitizeTargetPosition(character, targetPos))
+		if not ok then
+			warn(("Ability %s for class %s failed: %s"):format(tostring(abilityIdx), tostring(class.Name), tostring(err)))
+			return
+		end
 	end
 	
 	data.Cooldowns[abilityIdx] = now

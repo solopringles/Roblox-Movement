@@ -40,13 +40,14 @@ local UltimateGates = {
 				local target = MovementUtil.GetNearestInRay(hrp.Position, hrp.CFrame.LookVector, 60, {character}) -- Buffed from 20
 				if target then
 					local tHum = target:FindFirstChild("Humanoid")
-					if tHum then
+					local targetHrp = target:FindFirstChild("HumanoidRootPart")
+					if tHum and targetHrp then
 						-- Visual Feedback: Crimson impact
-						MovementUtil.ShowVisualFeedback(tHum.Parent.PrimaryPart.Position, 30, Color3.new(0.5, 0, 0), 0.8)
+						MovementUtil.ShowVisualFeedback(targetHrp.Position, 24, Color3.new(0.5, 0, 0), 0.8)
 						
 						tHum.PlatformStand = true
 						task.delay(1, function() tHum.PlatformStand = false end)
-						MovementUtil.ApplyKnockback(target, hrp.CFrame.LookVector, 2500) -- Buffed from 500
+						MovementUtil.ApplyKnockback(target, hrp.CFrame.LookVector, 220)
 					end
 				end
 				

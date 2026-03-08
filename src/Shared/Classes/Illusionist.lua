@@ -53,10 +53,11 @@ local Illusionist = {
 			CD = 1,
 			ExecuteServer = function(player, character, targetPos)
 				local hrp = character:FindFirstChild("HumanoidRootPart")
-				if not hrp then return end
+				local hum = character:FindFirstChild("Humanoid")
+				if not hrp or not hum then return end
 				
 				-- RESTRICTION: Can only swap if relatively still (Not falling off map cheaply)
-				if hrp.AssemblyLinearVelocity.Magnitude > 10 then
+				if hrp.AssemblyLinearVelocity.Magnitude > 35 or hum:GetState() == Enum.HumanoidStateType.Freefall then
 					warn("🚫 Cannot swap while moving too fast!")
 					return
 				end
