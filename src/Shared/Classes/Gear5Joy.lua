@@ -16,7 +16,7 @@ local Gear5Joy = {
 				for i = 1, 4 do
 					task.wait(0.2)
 					local randomOffset = Vector3.new(math.random(-10, 10), 0, math.random(-10, 10))
-					local dir = randomOffset.Magnitude > 0 and randomOffset.Unit or hrp.CFrame.LookVector
+					local dir = MovementUtil.SafeUnit(randomOffset, hrp.CFrame.LookVector)
 					local pos = hrp.Position + dir * 5
 					
 					-- Visual Feedback: Rubber ripple
@@ -33,7 +33,7 @@ local Gear5Joy = {
 				local hrp = character:FindFirstChild("HumanoidRootPart")
 				if not hrp or character:GetAttribute("Gear5GigantActive") then return end
 				
-				-- Grow massive for 4 seconds
+				-- Grow 20% larger for 4 seconds
 				character:SetAttribute("Gear5GigantActive", true)
 				character:ScaleTo(1.2)
 				

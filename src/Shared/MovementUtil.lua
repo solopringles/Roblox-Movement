@@ -3,6 +3,8 @@ local MovementUtil = {}
 
 -- Tag for when someone is dodging/invincible
 MovementUtil.IFRAME_TAG = "IFrameActive"
+local TANK_REGEN_MULTIPLIER = 0.5
+local IMPULSE_FORCE_DIVISOR = 60
 
 local function SafeUnit(vector, fallback)
 	if vector.Magnitude > 0.001 then
@@ -11,6 +13,8 @@ local function SafeUnit(vector, fallback)
 
 	return fallback or Vector3.new(0, 1, 0)
 end
+
+MovementUtil.SafeUnit = SafeUnit
 
 -- Snap a part to a specific speed for a duration
 -- Snap a part to a specific speed for a duration
@@ -74,7 +78,7 @@ function MovementUtil.ApplyKnockback(targetCharacter, direction, force)
 		
 		-- 3. Apply controlled velocity
 		hrp.AssemblyLinearVelocity = Vector3.zero 
-		hrp:ApplyImpulse(finalDirection * hrp.AssemblyMass * math.clamp(math.abs(finalForce) / 60, 1, 3))
+		hrp:ApplyImpulse(finalDirection * hrp.AssemblyMass * math.clamp(math.abs(finalForce) / IMPULSE_FORCE_DIVISOR, 1, 3))
 		hrp.AssemblyLinearVelocity = finalDirection * finalForce
 		
 		print("💨 Applied standardized ragdoll knockback to: " .. targetCharacter.Name)
@@ -98,8 +102,8 @@ function MovementUtil.ApplyTankBuff(character, duration, healthBoost, reduction)
 	tag.Parent = character
 	
 	-- 3. Temporary Regen loop
-	local regenBudget = healthBoost * 0.5
-	local regenRate = math.max((healthBoost * 0.5) / math.max(duration, 0.1), 2)
+	local regenBudget = healthBoost * TANK_REGEN_MULTIPLIER
+	local regenRate = math.max(regenBudget / math.max(duration, 0.1), 2)
 	local regenConnection
 	regenConnection = game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
 		if hum.Parent and hum.Health < hum.MaxHealth and regenBudget > 0 then

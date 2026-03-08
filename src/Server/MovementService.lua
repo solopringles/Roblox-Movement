@@ -32,6 +32,10 @@ local TIER_COOLDOWN_FLOOR = {
 	Mythic = 2.5,
 }
 
+local function IsNaN(value)
+	return value ~= value
+end
+
 local function EnsurePlayerData(player)
 	PlayerData[player] = PlayerData[player] or {
 		Class = nil,
@@ -52,7 +56,7 @@ local function SanitizeTargetPosition(character, targetPos)
 		return hrp.Position + hrp.CFrame.LookVector * 40
 	end
 
-	if targetPos.X ~= targetPos.X or targetPos.Y ~= targetPos.Y or targetPos.Z ~= targetPos.Z then
+	if IsNaN(targetPos.X) or IsNaN(targetPos.Y) or IsNaN(targetPos.Z) then
 		return hrp.Position + hrp.CFrame.LookVector * 40
 	end
 
@@ -135,7 +139,12 @@ function MovementService.HandleAbility(player, abilityIdx, targetPos) -- ability
 	end
 
 	if abilityData.ExecuteServer then
-		local ok, err = pcall(abilityData.ExecuteServer, player, character, SanitizeTargetPosition(character, targetPos))
+		local sanitizedTargetPos = SanitizeTargetPosition(character, targetPos)
+		if not sanitizedTargetPos then
+			return
+		end
+
+		local ok, err = pcall(abilityData.ExecuteServer, player, character, sanitizedTargetPos)
 		if not ok then
 			warn(("Ability %s for class %s failed: %s"):format(tostring(abilityIdx), tostring(class.Name), tostring(err)))
 			return
