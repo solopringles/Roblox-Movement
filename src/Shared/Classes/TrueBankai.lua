@@ -38,8 +38,8 @@ local TrueBankai = {
 				if not hrp then return end
 				
 				-- One final push to clear the arena
-				MovementUtil.ShowVisualFeedback(hrp.Position, 80, Color3.new(0, 0, 0), 1.5, Enum.PartType.Ball)
-				MovementUtil.CreateExplosionPush(hrp.Position, 80, 1000000, {character})
+				MovementUtil.ShowVisualFeedback(hrp.Position, 55, Color3.new(0, 0, 0), 1.5, Enum.PartType.Ball)
+				MovementUtil.CreateExplosionPush(hrp.Position, 55, 700000, {character})
 			end
 		}
 	}

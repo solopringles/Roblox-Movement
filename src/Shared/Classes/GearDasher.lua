@@ -34,13 +34,16 @@ local GearDasher = {
 				
 				-- Aim with cursor!
 				local aimDir = (targetPos - hrp.Position).Unit
-				local result = workspace:Raycast(hrp.Position, aimDir * 80) -- Buffed from 25
+				local rayParams = RaycastParams.new()
+				rayParams.FilterType = Enum.RaycastFilterType.Exclude
+				rayParams.FilterDescendantsInstances = {character}
+				local result = workspace:Raycast(hrp.Position, aimDir * 80, rayParams) -- Buffed from 25
 				
 				if result then
-					MovementUtil.ApplyVelocity(hrp, aimDir * 140, 0.3) -- Buffed from 70
+					MovementUtil.ApplyVelocity(hrp, aimDir * 120, 0.3)
 				else
 					-- Recoil if you whiff it
-					MovementUtil.ApplyVelocity(hrp, -aimDir * 70, 0.2) -- Buffed from 40
+					MovementUtil.ApplyVelocity(hrp, -aimDir * 55, 0.2)
 				end
 			end
 		}

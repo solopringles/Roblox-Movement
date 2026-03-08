@@ -24,9 +24,10 @@ Each class script in `src/Shared/Classes` follows this structure:
 
 ## ⚠️ Things to Know (Dev Notes)
 - **Physics**: We use `LinearVelocity` for smooth dashes and `Explosion` blasts (set to 0 damage) for area-of-effect knockback.
-- **Cooldowns**: CDs are enforced on the **Server**. If the client tries to fire early, nothing happens.
+- **Cooldowns**: CDs are enforced on the **Server** with tier-based minimum cooldowns, so stronger classes can't spam as hard.
+- **Targeting**: Cursor-aimed abilities send the mouse hit position, but the server clamps that target so clients can't aim arbitrarily far away.
 - **Wall Kicks**: Some classes (like Accelerator) check for walls. If you find them being wonky, check the `RaycastParams` in `MovementUtil`.
-- **Scaling**: For Gear 5 or other size-changing moves, use `character:ScaleTo()`. The system handles mass adjustment, but watch out for clipping!
+- **Scaling**: For Gear 5 or other size-changing moves, use `character:ScaleTo()` and avoid mutating read-only physics properties directly.
 
 ## 🔌 How to Load into Roblox Studio
 
